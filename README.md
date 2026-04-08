@@ -1,12 +1,8 @@
-# stock-banner-svg-generator
+# Ticker SVG
 
 An enterprise-grade, animated SVG generator for live stock and cryptocurrency market data. Designed specifically for embedding in GitHub profiles, GitLab READMEs, or any markdown environment that supports SVGs.
 
-### Themes Preview
-
-| **Dark Theme** (Default) | **Light Theme** |
-| :--- | :--- |
-| ![Dark Banner Example](./animated_banner.svg) | ![Light Banner Example](./light_banner_example.svg) |
+![Dark Banner Hero](./animated_banner.svg)
 
 ## Overview
 
@@ -38,6 +34,10 @@ The service is built on a lightweight **Express.js** stack with **Node-Fetch** f
 ## Themes
 
 The banner supports a `theme` query parameter to switch between dark and light modes.
+
+| **Dark Theme** (Default) | **Light Theme** |
+| :--- | :--- |
+| ![Dark Banner Example](./animated_banner.svg) | ![Light Banner Example](./light_banner_example.svg) |
 
 - **Dark (Default)**: `?theme=dark`
 - **Light**: `?theme=light`
@@ -110,7 +110,4 @@ sudo systemctl start ticker-svg
 
 ## License
 
-[MIT](LICENSE)
-
----
-Made with ❤️ by [jedbillyb](https://github.com/jedbillyb)
+MIT © 2024
