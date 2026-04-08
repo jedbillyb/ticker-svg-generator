@@ -2,7 +2,11 @@
 
 An enterprise-grade, animated SVG generator for live stock and cryptocurrency market data. Designed specifically for embedding in GitHub profiles, GitLab READMEs, or any markdown environment that supports SVGs.
 
-![Animated Banner Example](./animated_banner.svg)
+### Themes Preview
+
+| **Dark Theme** (Default) | **Light Theme** |
+| :--- | :--- |
+| ![Dark Banner Example](./animated_banner.svg) | ![Light Banner Example](./light_banner_example.svg) |
 
 ## Overview
 
