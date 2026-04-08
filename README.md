@@ -123,4 +123,7 @@ sudo systemctl start ticker-svg
 
 ## License
 
-MIT © 2024
+[MIT](LICENSE)
+
+---
+Made with ❤️ by [jedbillyb](https://github.com/jedbillyb)
