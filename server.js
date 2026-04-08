@@ -302,16 +302,16 @@ const MY_PROJECTS = [
 ];
 
 app.get('/projects', (req, res) => {
-  const width = 800;
-  const rowHeight = 45;
-  const headerHeight = 50;
-  const height = headerHeight + (MY_PROJECTS.length * rowHeight) + 20;
+  const width = 480;
+  const rowHeight = 40;
+  const headerHeight = 35;
+  const height = headerHeight + (MY_PROJECTS.length * rowHeight) + 15;
 
   let rows = MY_PROJECTS.map((p, i) => `
-    <tr style="border-bottom: 1px solid #21262d;">
-      <td style="padding: 12px 16px; color: #58a6ff; font-weight: 600;">${escapeXml(p.name)}</td>
-      <td style="padding: 12px 16px; color: #8b949e; font-size: 13px;">${escapeXml(p.stack)}</td>
-      <td style="padding: 12px 16px; color: #c9d1d9; font-size: 13px;">${escapeXml(p.desc)}</td>
+    <tr class="project-row" style="animation-delay: ${0.1 + (i * 0.1)}s;">
+      <td style="padding: 8px 12px; color: #58a6ff; font-weight: 600; font-size: 12px;">${escapeXml(p.name)}</td>
+      <td style="padding: 8px 12px; color: #8b949e; font-size: 11px;">${escapeXml(p.stack)}</td>
+      <td style="padding: 8px 12px; color: #c9d1d9; font-size: 11px;">${escapeXml(p.desc)}</td>
     </tr>
   `).join('');
 
@@ -320,11 +320,15 @@ app.get('/projects', (req, res) => {
       <foreignObject width="100%" height="100%">
         <div xmlns="http://www.w3.org/1999/xhtml">
           <style>
+            @keyframes slideUp {
+              from { opacity: 0; transform: translateY(10px); }
+              to { opacity: 1; transform: translateY(0); }
+            }
             .container {
               font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-              background: #0d1117;
+              background: #151515;
               border: 1px solid #30363d;
-              border-radius: 10px;
+              border-radius: 6px;
               overflow: hidden;
             }
             table {
@@ -333,22 +337,29 @@ app.get('/projects', (req, res) => {
               text-align: left;
             }
             th {
-              background: #161b22;
+              background: #1c1c1c;
               color: #8b949e;
-              font-size: 12px;
+              font-size: 10px;
               font-weight: 600;
               text-transform: uppercase;
-              padding: 12px 16px;
+              padding: 10px 12px;
               border-bottom: 1px solid #30363d;
+            }
+            .project-row {
+              border-bottom: 1px solid #21262d;
+              animation: slideUp 0.5s ease-out both;
+            }
+            .project-row:last-child {
+              border-bottom: none;
             }
           </style>
           <div class="container">
             <table>
               <thead>
                 <tr>
-                  <th style="width: 20%;">Project</th>
+                  <th style="width: 25%;">Project</th>
                   <th style="width: 25%;">Stack</th>
-                  <th style="width: 55%;">Description</th>
+                  <th style="width: 50%;">What it does</th>
                 </tr>
               </thead>
               <tbody>
