@@ -47,14 +47,62 @@ function escapeXml(unsafe) {
 }
 
 function buildBanner(stocks, theme = 'dark') {
-  const isLight = theme === 'light';
-  const colors = {
-    bg: isLight ? '#ffffff' : '#151515',
-    symbol: isLight ? '#1f2328' : '#f0f6fc',
-    name: isLight ? '#636c76' : '#8b949e',
-    price: isLight ? '#1f2328' : '#f0f6fc',
-    border: isLight ? '#d0d7de' : '#30363d'
+  const themes = {
+    dark: {
+      bg: '#151515',
+      symbol: '#f0f6fc',
+      name: '#8b949e',
+      price: '#f0f6fc',
+      border: '#30363d'
+    },
+    light: {
+      bg: '#ffffff',
+      symbol: '#1f2328',
+      name: '#636c76',
+      price: '#1f2328',
+      border: '#d0d7de',
+      stroke: '#d0d7de'
+    },
+    matrix: {
+      bg: '#000000',
+      symbol: '#00ff41',
+      name: '#008f11',
+      price: '#00ff41',
+      border: '#003b00',
+      pos: '#00ff41',
+      neg: '#ff0000'
+    },
+    sunset: {
+      bg: '#2d1b33',
+      symbol: '#ff7e5f',
+      name: '#feb47b',
+      price: '#ffffff',
+      border: '#4a304d',
+      pos: '#ff7e5f',
+      neg: '#feb47b'
+    },
+    dracula: {
+      bg: '#282a36',
+      symbol: '#bd93f9',
+      name: '#6272a4',
+      price: '#f8f8f2',
+      border: '#44475a',
+      pos: '#50fa7b',
+      neg: '#ff5555'
+    },
+    forest: {
+      bg: '#1a1d1a',
+      symbol: '#a7c957',
+      name: '#6a994e',
+      price: '#f2e8cf',
+      border: '#386641',
+      pos: '#a7c957',
+      neg: '#bc4749'
+    }
   };
+
+  const currentTheme = themes[theme] || themes.dark;
+  const isLight = theme === 'light';
 
   const cardWidth = 240;
   const height = 80;
@@ -65,7 +113,12 @@ function buildBanner(stocks, theme = 'dark') {
   stocks.forEach((stock, i) => {
     const xOffset = i * cardWidth;
     const isPositive = parseFloat(stock.change) >= 0;
-    const color = isPositive ? '#39d353' : '#ff7b72';
+    
+    // Theme-specific or default colors for positive/negative
+    const color = isPositive 
+      ? (currentTheme.pos || '#39d353') 
+      : (currentTheme.neg || '#ff7b72');
+
     const arrow = isPositive ? '▲' : '▼';
     const sign = isPositive ? '+' : '';
 
@@ -85,7 +138,7 @@ function buildBanner(stocks, theme = 'dark') {
       <g clip-path="url(#clip-${i})">
         <g transform="translate(${xOffset}, 0)">
           <g class="stock-group stock-group-${i}">
-            ${i > 0 ? `<line x1="0" y1="15" x2="0" y2="65" stroke="${colors.border}" stroke-width="1"/>` : ''}
+            ${i > 0 ? `<line x1="0" y1="15" x2="0" y2="65" stroke="${currentTheme.border}" stroke-width="1"/>` : ''}
 
             <text x="20" y="26" class="text symbol">${displayName}</text>
             <text x="20" y="38" class="text name">${escapedName}</text>
@@ -114,9 +167,9 @@ function buildBanner(stocks, theme = 'dark') {
     <defs>
       <style>
         .text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
-        .symbol { fill: ${colors.symbol}; font-size: 13px; font-weight: 600; }
-        .name { fill: ${colors.name}; font-size: 9px; font-weight: 500; letter-spacing: 0.5px; }
-        .price { fill: ${colors.price}; font-size: 18px; font-weight: 600; }
+        .symbol { fill: ${currentTheme.symbol}; font-size: 13px; font-weight: 600; }
+        .name { fill: ${currentTheme.name}; font-size: 9px; font-weight: 500; letter-spacing: 0.5px; }
+        .price { fill: ${currentTheme.price}; font-size: 18px; font-weight: 600; }
         .change { font-size: 11px; font-weight: 600; }
 
         @keyframes slideUp {
@@ -140,7 +193,7 @@ function buildBanner(stocks, theme = 'dark') {
       </style>
     </defs>
 
-    <rect width="${totalWidth}" height="${height}" rx="6" fill="${colors.bg}" ${isLight ? 'stroke="#d0d7de" stroke-width="1"' : ''} />
+    <rect width="${totalWidth}" height="${height}" rx="6" fill="${currentTheme.bg}" ${currentTheme.stroke ? `stroke="${currentTheme.stroke}" stroke-width="1"` : ''} />
 
     ${content}
   </svg>`;
@@ -175,7 +228,7 @@ async function updateStockData() {
 app.get('/banner/:symbols', async (req, res) => {
   const rawPath = req.params.symbols.replace('.svg', '');
   const symbols = rawPath.toUpperCase();
-  const theme = req.query.theme === 'light' ? 'light' : 'dark';
+  const theme = req.query.theme || 'dark';
 
   if (DEV_MODE) {
     const svg = buildBanner(MOCK_STOCKS, theme);
@@ -231,7 +284,7 @@ app.get('/banner', (req, res) => {
     return res.status(503).send('Server warming up... refresh in 5 seconds.');
   }
 
-  const theme = req.query.theme === 'light' ? 'light' : 'dark';
+  const theme = req.query.theme || 'dark';
   const svg = buildBanner(globalStockCache, theme);
 
   res.setHeader('Content-Type', 'image/svg+xml');

@@ -1,0 +1,68 @@
+<svg width="480" height="80" viewBox="0 0 480 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+      .symbol { fill: #a7c957; font-size: 13px; font-weight: 600; }
+      .name { fill: #6a994e; font-size: 9px; font-weight: 500; letter-spacing: 0.5px; }
+      .price { fill: #f2e8cf; font-size: 18px; font-weight: 600; }
+      .change { font-size: 11px; font-weight: 600; }
+
+      @keyframes slideUp {
+        from { opacity: 0; transform: translateY(18px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
+      @keyframes breathe {
+        0%   { opacity: 0.6; }
+        50%  { opacity: 1; }
+        100% { opacity: 0.6; }
+      }
+
+      .stock-group {
+        animation: slideUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
+
+      .change-indicator {
+        animation: breathe 3s ease-in-out infinite;
+        transform-box: fill-box;
+        transform-origin: center;
+      }
+
+      .group-0 { animation-delay: 0s; }
+      .group-1 { animation-delay: 0.3s; }
+    </style>
+  </defs>
+
+  <rect width="480" height="80" rx="6" fill="#1a1d1a" />
+
+  <g transform="translate(0, 0)">
+    <g class="stock-group group-0">
+      <text x="20" y="26" class="text symbol">BTC/USD</text>
+      <text x="20" y="38" class="text name">BITCOIN</text>
+      <text x="20" y="62" class="text price">$64,231.50</text>
+
+      <g transform="translate(145, 42)">
+        <g class="change-indicator">
+          <rect width="75" height="20" rx="10" fill="#a7c957" fill-opacity="0.15"/>
+          <text x="37.5" y="14" text-anchor="middle" class="text change" fill="#a7c957">▲ +2.45%</text>
+        </g>
+      </g>
+    </g>
+  </g>
+
+  <g transform="translate(240, 0)">
+    <line x1="0" y1="15" x2="0" y2="65" stroke="#386641" stroke-width="1"/>
+    <g class="stock-group group-1">
+      <text x="20" y="26" class="text symbol">NVDA</text>
+      <text x="20" y="38" class="text name">NVIDIA CORP</text>
+      <text x="20" y="62" class="text price">$875.28</text>
+
+      <g transform="translate(145, 42)">
+        <g class="change-indicator">
+          <rect width="75" height="20" rx="10" fill="#bc4749" fill-opacity="0.15"/>
+          <text x="37.5" y="14" text-anchor="middle" class="text change" fill="#bc4749">▼ -1.40%</text>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

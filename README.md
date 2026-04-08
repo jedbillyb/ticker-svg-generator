@@ -33,14 +33,27 @@ The service is built on a lightweight **Express.js** stack with **Node-Fetch** f
 
 ## Themes
 
-The banner supports a `theme` query parameter to switch between dark and light modes.
+The banner supports a `theme` query parameter to switch between various color palettes.
 
-| **Dark Theme** (Default) | **Light Theme** |
+| **Dark** (Default) | **Light** |
 | :--- | :--- |
-| ![Dark Banner Example](./animated_banner.svg) | ![Light Banner Example](./light_banner_example.svg) |
+| ![Dark Banner](./animated_banner.svg) | ![Light Banner](./light_banner_example.svg) |
 
-- **Dark (Default)**: `?theme=dark`
-- **Light**: `?theme=light`
+| **Matrix** | **Sunset** |
+| :--- | :--- |
+| ![Matrix Banner](./matrix_example.svg) | ![Sunset Banner](./sunset_example.svg) |
+
+| **Dracula** | **Forest** |
+| :--- | :--- |
+| ![Dracula Banner](./dracula_example.svg) | ![Forest Banner](./forest_example.svg) |
+
+### Available Themes
+- `dark` (default)
+- `light`
+- `matrix`
+- `sunset`
+- `dracula`
+- `forest`
 
 ## Examples
 
