@@ -1,4 +1,4 @@
-# Ticker SVG
+# ticker-svg-generator
 
 An enterprise-grade, animated SVG generator for live stock and cryptocurrency market data. Designed specifically for embedding in GitHub profiles, GitLab READMEs, or any markdown environment that supports SVGs.
 
