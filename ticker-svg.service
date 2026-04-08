@@ -1,0 +1,13 @@
+[Unit]
+Description=ticker-svg
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/ubuntu/ticker-svg
+EnvironmentFile=/home/ubuntu/ticker-svg/.env
+ExecStart=/usr/bin/node server.js
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
