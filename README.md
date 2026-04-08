@@ -19,6 +19,7 @@ An enterprise-grade, animated SVG generator for live stock and cryptocurrency ma
 - **Resilient Architecture**: Built-in fallback mechanism that serves stale cache data if the upstream API (Twelve Data) is unreachable.
 - **Dark Mode Native**: Styled with a `#151515` background and high-contrast typography optimized for modern developer platforms.
 - **XML Safe Rendering**: Automatically escapes special characters (like `&` in "AT&T") to ensure SVG validity across all platforms.
+- **Theme Support**: Includes a built-in light theme for use on white backgrounds or light-themed documentation.
 
 ## Architecture
 
@@ -29,6 +30,24 @@ The service is built on a lightweight **Express.js** stack with **Node-Fetch** f
 3. **Data Ingestion**: If cache is missing/stale, it fetches from the **Twelve Data API**.
 4. **SVG Engine**: The `buildBanner` function dynamically constructs an SVG string with per-card CSS keyframes and staggered delays.
 5. **Response**: Delivers a `Content-Type: image/svg+xml` buffer with standard HTTP cache headers.
+
+## Themes
+
+The banner supports a `theme` query parameter to switch between dark and light modes.
+
+- **Dark (Default)**: `?theme=dark`
+- **Light**: `?theme=light`
+
+## Examples
+
+### Default Banner (Dark)
+`GET /banner`
+
+### Custom Banner (Light Theme)
+`GET /banner/AAPL,MSFT,TSLA?theme=light`
+
+### Crypto Tracker (Dark Theme)
+`GET /banner/BTC/USD,ETH/USD,SOL/USD`
 
 ## Usage
 

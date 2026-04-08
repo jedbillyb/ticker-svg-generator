@@ -46,7 +46,16 @@ function escapeXml(unsafe) {
   });
 }
 
-function buildBanner(stocks) {
+function buildBanner(stocks, theme = 'dark') {
+  const isLight = theme === 'light';
+  const colors = {
+    bg: isLight ? '#ffffff' : '#151515',
+    symbol: isLight ? '#1f2328' : '#f0f6fc',
+    name: isLight ? '#636c76' : '#8b949e',
+    price: isLight ? '#1f2328' : '#f0f6fc',
+    border: isLight ? '#d0d7de' : '#30363d'
+  };
+
   const cardWidth = 240;
   const height = 80;
   const totalWidth = stocks.length * cardWidth;
@@ -76,7 +85,7 @@ function buildBanner(stocks) {
       <g clip-path="url(#clip-${i})">
         <g transform="translate(${xOffset}, 0)">
           <g class="stock-group stock-group-${i}">
-            ${i > 0 ? `<line x1="0" y1="15" x2="0" y2="65" stroke="#30363d" stroke-width="1"/>` : ''}
+            ${i > 0 ? `<line x1="0" y1="15" x2="0" y2="65" stroke="${colors.border}" stroke-width="1"/>` : ''}
 
             <text x="20" y="26" class="text symbol">${displayName}</text>
             <text x="20" y="38" class="text name">${escapedName}</text>
@@ -105,9 +114,9 @@ function buildBanner(stocks) {
     <defs>
       <style>
         .text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
-        .symbol { fill: #f0f6fc; font-size: 13px; font-weight: 600; }
-        .name { fill: #8b949e; font-size: 9px; font-weight: 500; letter-spacing: 0.5px; }
-        .price { fill: #f0f6fc; font-size: 18px; font-weight: 600; }
+        .symbol { fill: ${colors.symbol}; font-size: 13px; font-weight: 600; }
+        .name { fill: ${colors.name}; font-size: 9px; font-weight: 500; letter-spacing: 0.5px; }
+        .price { fill: ${colors.price}; font-size: 18px; font-weight: 600; }
         .change { font-size: 11px; font-weight: 600; }
 
         @keyframes slideUp {
@@ -131,7 +140,7 @@ function buildBanner(stocks) {
       </style>
     </defs>
 
-    <rect width="${totalWidth}" height="${height}" rx="6" fill="#151515" />
+    <rect width="${totalWidth}" height="${height}" rx="6" fill="${colors.bg}" ${isLight ? 'stroke="#d0d7de" stroke-width="1"' : ''} />
 
     ${content}
   </svg>`;
@@ -166,9 +175,10 @@ async function updateStockData() {
 app.get('/banner/:symbols', async (req, res) => {
   const rawPath = req.params.symbols.replace('.svg', '');
   const symbols = rawPath.toUpperCase();
+  const theme = req.query.theme === 'light' ? 'light' : 'dark';
 
   if (DEV_MODE) {
-    const svg = buildBanner(MOCK_STOCKS);
+    const svg = buildBanner(MOCK_STOCKS, theme);
     res.setHeader('Content-Type', 'image/svg+xml');
     return res.send(svg);
   }
@@ -193,7 +203,7 @@ app.get('/banner/:symbols', async (req, res) => {
       timestamp: Date.now()
     });
 
-    const svg = buildBanner(stockArray);
+    const svg = buildBanner(stockArray, theme);
     res.setHeader('Content-Type', 'image/svg+xml');
     res.setHeader('Cache-Control', 'public, max-age=300');
     res.send(svg);
@@ -202,7 +212,7 @@ app.get('/banner/:symbols', async (req, res) => {
     // If API fails but we have OLD data, serve the old data as a fallback
     if (cachedData) {
       res.setHeader('Content-Type', 'image/svg+xml');
-      return res.send(buildBanner(cachedData.data));
+      return res.send(buildBanner(cachedData.data, theme));
     }
     console.error(`Error fetching symbols ${symbols}:`, err);
     res.status(500).send('Error');
@@ -221,7 +231,8 @@ app.get('/banner', (req, res) => {
     return res.status(503).send('Server warming up... refresh in 5 seconds.');
   }
 
-  const svg = buildBanner(globalStockCache);
+  const theme = req.query.theme === 'light' ? 'light' : 'dark';
+  const svg = buildBanner(globalStockCache, theme);
 
   res.setHeader('Content-Type', 'image/svg+xml');
   res.setHeader('Cache-Control', 'public, max-age=300');
