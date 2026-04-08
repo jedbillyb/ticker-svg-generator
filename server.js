@@ -291,3 +291,77 @@ app.get('/banner', (req, res) => {
   res.setHeader('Cache-Control', 'public, max-age=300');
   res.send(svg);
 });
+
+const MY_PROJECTS = [
+  { name: 'ticker-svg', stack: 'Node.js · Express', desc: 'live animated market ticker for github profiles', link: 'https://github.com/jedbillyb/stock-banner-svg-generator' },
+  { name: 'ghook', stack: 'JavaScript · Express', desc: 'github → discord webhook bridge', link: 'https://github.com/jedbillyb/ghook' },
+  { name: 'nz-vehicle-finder', stack: 'React · TS · SQLite', desc: 'search & filter NZ vehicle listings', link: 'https://github.com/jedbillyb/nz-vehicle-finder' },
+  { name: 'Desmos-Tool', stack: 'JavaScript', desc: 'chrome/firefox extension for Desmos graphs', link: 'https://github.com/jedbillyb/Desmos-Text-Input-Output-Tool' },
+  { name: 'vc-notif-bot', stack: 'JS · Discord.js', desc: 'voice channel join/leave notifications', link: 'https://github.com/jedbillyb/vc-discord-notification-bot' },
+  { name: 'faultline mc', stack: 'PaperMC · Shell', desc: 'minecraft smp community server', link: 'https://discord.jedbillyb.com' }
+];
+
+app.get('/projects', (req, res) => {
+  const width = 800;
+  const rowHeight = 45;
+  const headerHeight = 50;
+  const height = headerHeight + (MY_PROJECTS.length * rowHeight) + 20;
+
+  let rows = MY_PROJECTS.map((p, i) => `
+    <tr style="border-bottom: 1px solid #21262d;">
+      <td style="padding: 12px 16px; color: #58a6ff; font-weight: 600;">${escapeXml(p.name)}</td>
+      <td style="padding: 12px 16px; color: #8b949e; font-size: 13px;">${escapeXml(p.stack)}</td>
+      <td style="padding: 12px 16px; color: #c9d1d9; font-size: 13px;">${escapeXml(p.desc)}</td>
+    </tr>
+  `).join('');
+
+  const svg = `
+    <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <foreignObject width="100%" height="100%">
+        <div xmlns="http://www.w3.org/1999/xhtml">
+          <style>
+            .container {
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+              background: #0d1117;
+              border: 1px solid #30363d;
+              border-radius: 10px;
+              overflow: hidden;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              text-align: left;
+            }
+            th {
+              background: #161b22;
+              color: #8b949e;
+              font-size: 12px;
+              font-weight: 600;
+              text-transform: uppercase;
+              padding: 12px 16px;
+              border-bottom: 1px solid #30363d;
+            }
+          </style>
+          <div class="container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 20%;">Project</th>
+                  <th style="width: 25%;">Stack</th>
+                  <th style="width: 55%;">Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </foreignObject>
+    </svg>
+  `;
+
+  res.setHeader('Content-Type', 'image/svg+xml');
+  res.setHeader('Cache-Control', 'public, max-age=3600');
+  res.send(svg);
+});
