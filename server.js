@@ -10,7 +10,7 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 const STOCKS_TO_TRACK = 'RKLB,NVDA,NBIS,BTC/USD';
 let globalStockCache = null;
 
-const STAGGER_DELAY_MS = 0.3; // seconds between each card entrance
+const STAGGER_DELAY_MS = 0.3; // seconds between each card entranc
 const STAGGER_DURATION_S = 0.9; // how long each card's animation takes
 
 const DEV_MODE = process.env.NODE_ENV !== 'production';
@@ -34,6 +34,18 @@ function getArrow(change) {
   return '–';
 }
 
+function escapeXml(unsafe) {
+  return unsafe.replace(/[<>&"']/g, (c) => {
+    switch (c) {
+      case '<': return '&lt;';
+      case '>': return '&gt;';
+      case '&': return '&amp;';
+      case '"': return '&quot;';
+      case "'": return '&apos;';
+    }
+  });
+}
+
 function buildBanner(stocks) {
   const cardWidth = 240;
   const height = 80;
@@ -50,8 +62,9 @@ function buildBanner(stocks) {
 
     const priceStr = parseFloat(stock.close).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const pctStr = `${sign}${parseFloat(stock.percent_change).toFixed(2)}%`;
-    const displayName = stock.symbol.toUpperCase();
+    const displayName = escapeXml(stock.symbol.toUpperCase());
     const truncName = (stock.name || '').length > 18 ? stock.name.slice(0, 18) + '...' : stock.name;
+    const escapedName = escapeXml(truncName.toUpperCase());
 
     // Each card gets its own clipPath to contain the slide animation
     content += `
@@ -61,17 +74,19 @@ function buildBanner(stocks) {
         </clipPath>
       </defs>
       <g clip-path="url(#clip-${i})">
-        <g class="stock-group stock-group-${i}">
-          ${i > 0 ? `<line x1="${xOffset}" y1="15" x2="${xOffset}" y2="65" stroke="#30363d" stroke-width="1"/>` : ''}
+        <g transform="translate(${xOffset}, 0)">
+          <g class="stock-group stock-group-${i}">
+            ${i > 0 ? `<line x1="0" y1="15" x2="0" y2="65" stroke="#30363d" stroke-width="1"/>` : ''}
 
-          <text x="${xOffset + 20}" y="26" class="text symbol">${displayName}</text>
-          <text x="${xOffset + 20}" y="38" class="text name">${truncName.toUpperCase()}</text>
-          <text x="${xOffset + 20}" y="62" class="text price">$${priceStr}</text>
+            <text x="20" y="26" class="text symbol">${displayName}</text>
+            <text x="20" y="38" class="text name">${escapedName}</text>
+            <text x="20" y="62" class="text price">$${priceStr}</text>
 
-          <g transform="translate(${xOffset + 145}, 42)">
-            <g class="change-indicator">
-              <rect width="75" height="20" rx="10" fill="${color}" fill-opacity="0.15"/>
-              <text x="37.5" y="14" text-anchor="middle" class="text change" fill="${color}">${arrow} ${pctStr}</text>
+            <g transform="translate(145, 42)">
+              <g class="change-indicator">
+                <rect width="75" height="20" rx="10" fill="${color}" fill-opacity="0.15"/>
+                <text x="37.5" y="14" text-anchor="middle" class="text change" fill="${color}">${arrow} ${pctStr}</text>
+              </g>
             </g>
           </g>
         </g>
@@ -108,6 +123,8 @@ function buildBanner(stocks) {
 
         .change-indicator {
           animation: breathe 3s ease-in-out infinite;
+          transform-box: fill-box;
+          transform-origin: center;
         }
 
         ${staggerStyles}
@@ -156,6 +173,8 @@ app.get('/banner/:symbols', async (req, res) => {
     return res.send(svg);
   }
 
+  const cachedData = cache.get(symbols);
+
   try {
     const url = `https://api.twelvedata.com/quote?symbol=${symbols}&apikey=${API_KEY}`;
     const r = await fetch(url);
@@ -163,8 +182,9 @@ app.get('/banner/:symbols', async (req, res) => {
 
     if (!r.ok || data.code) throw new Error('API Error');
 
-    let stockArray = symbols.split(',').map(s => 
-      symbols.split(',').length === 1 ? data : data[s]
+    let symbolsArray = symbols.split(',');
+    let stockArray = symbolsArray.map(s => 
+      symbolsArray.length === 1 ? data : data[s]
     ).filter(Boolean);
 
     // 2. Save the result to cache before sending
@@ -181,8 +201,10 @@ app.get('/banner/:symbols', async (req, res) => {
   } catch (err) {
     // If API fails but we have OLD data, serve the old data as a fallback
     if (cachedData) {
+      res.setHeader('Content-Type', 'image/svg+xml');
       return res.send(buildBanner(cachedData.data));
     }
+    console.error(`Error fetching symbols ${symbols}:`, err);
     res.status(500).send('Error');
   }
 });

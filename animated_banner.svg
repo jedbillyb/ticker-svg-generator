@@ -1,6 +1,6 @@
 <svg width="480" height="80" viewBox="0 0 480 80" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <style>
+          <style>
           .text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
           .symbol { fill: #f0f6fc; font-size: 13px; font-weight: 600; }
           .name { fill: #8b949e; font-size: 9px; font-weight: 500; letter-spacing: 0.5px; }
@@ -34,6 +34,8 @@
           .change-indicator {
             animation: pulse 2s ease-in-out infinite;
             animation-delay: 1s;
+            transform-box: fill-box;
+            transform-origin: center;
           }
 
           .stock-group:nth-child(1) { animation-delay: 0.1s; }
@@ -50,28 +52,33 @@
       <rect width="480" height="80" rx="6" fill="#151515" class="banner-bg"/>
 
       
-      <g transform="translate(0, 0)" class="stock-group">
-        
+      <g transform="translate(0, 0)">
+        <g class="stock-group">
+          <text x="20" y="26" class="text symbol">RKLB</text>
+          <text x="20" y="38" class="text name">ROCKET LAB USA</text>
+          <text x="20" y="62" class="text price">$4.25</text>
 
-        <text x="20" y="26" class="text symbol">RKLB</text>
-        <text x="20" y="38" class="text name">ROCKET LAB USA</text>
-        <text x="20" y="62" class="text price">$4.25</text>
-
-        <g transform="translate(145, 42)" class="change-indicator">
-          <rect width="75" height="20" rx="10" fill="#39d353" fill-opacity="0.15"/>
-          <text x="37.5" y="14" text-anchor="middle" class="text change" fill="#39d353">▲ +3.66%</text>
+          <g transform="translate(145, 42)">
+            <g class="change-indicator">
+              <rect width="75" height="20" rx="10" fill="#39d353" fill-opacity="0.15"/>
+              <text x="37.5" y="14" text-anchor="middle" class="text change" fill="#39d353">▲ +3.66%</text>
+            </g>
+          </g>
         </g>
       </g>
-      <g transform="translate(240, 0)" class="stock-group">
+      <g transform="translate(240, 0)">
         <line x1="0" y1="15" x2="0" y2="65" stroke="#30363d" stroke-width="1"/>
+        <g class="stock-group">
+          <text x="20" y="26" class="text symbol">NVDA</text>
+          <text x="20" y="38" class="text name">NVIDIA CORPORATION</text>
+          <text x="20" y="62" class="text price">$875.28</text>
 
-        <text x="20" y="26" class="text symbol">NVDA</text>
-        <text x="20" y="38" class="text name">NVIDIA CORPORATION</text>
-        <text x="20" y="62" class="text price">$875.28</text>
-
-        <g transform="translate(145, 42)" class="change-indicator">
-          <rect width="75" height="20" rx="10" fill="#ff7b72" fill-opacity="0.15"/>
-          <text x="37.5" y="14" text-anchor="middle" class="text change" fill="#ff7b72">▼ -1.40%</text>
+          <g transform="translate(145, 42)">
+            <g class="change-indicator">
+              <rect width="75" height="20" rx="10" fill="#ff7b72" fill-opacity="0.15"/>
+              <text x="37.5" y="14" text-anchor="middle" class="text change" fill="#ff7b72">▼ -1.40%</text>
+            </g>
+          </g>
         </g>
       </g>
     </svg>
