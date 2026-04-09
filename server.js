@@ -16,10 +16,10 @@ const STAGGER_DURATION_S = 0.9; // how long each card's animation takes
 const DEV_MODE = process.env.NODE_ENV !== 'production';
 
 const MOCK_STOCKS = [
-  { symbol: 'RKLB', name: 'Rocket Lab USA', close: '24.31', change: '0.87', percent_change: '3.71', trend: [22.1, 22.5, 23.2, 22.8, 23.5, 24.0, 24.31] },
-  { symbol: 'NVDA', name: 'NVIDIA Corp', close: '875.40', change: '-12.30', percent_change: '-1.39', trend: [910.2, 905.1, 890.5, 885.2, 880.0, 878.5, 875.40] },
-  { symbol: 'NBIS', name: 'Nebius Group', close: '18.92', change: '0.44', percent_change: '2.38', trend: [17.5, 17.8, 18.2, 18.0, 18.5, 18.7, 18.92] },
-  { symbol: 'BTC/USD', name: 'Bitcoin', close: '83241.00', change: '-1024.00', percent_change: '-1.21', trend: [85000, 84200, 84800, 83500, 84000, 83800, 83241] },
+  { symbol: 'RKLB', name: 'Rocket Lab USA', close: '24.31', change: '0.87', percent_change: '3.71' },
+  { symbol: 'NVDA', name: 'NVIDIA Corp', close: '875.40', change: '-12.30', percent_change: '-1.39' },
+  { symbol: 'NBIS', name: 'Nebius Group', close: '18.92', change: '0.44', percent_change: '2.38' },
+  { symbol: 'BTC/USD', name: 'Bitcoin', close: '83241.00', change: '-1024.00', percent_change: '-1.21' },
 ];
 
 function getChangeColor(change) {
@@ -53,8 +53,7 @@ function buildBanner(stocks, theme = 'dark') {
       symbol: '#f0f6fc',
       name: '#8b949e',
       price: '#f0f6fc',
-      border: '#30363d',
-      trendOpacity: '0.4'
+      border: '#30363d'
     },
     light: {
       bg: '#ffffff',
@@ -62,8 +61,7 @@ function buildBanner(stocks, theme = 'dark') {
       name: '#636c76',
       price: '#1f2328',
       border: '#d0d7de',
-      stroke: '#d0d7de',
-      trendOpacity: '0.2'
+      stroke: '#d0d7de'
     },
     matrix: {
       bg: '#000000',
@@ -72,8 +70,7 @@ function buildBanner(stocks, theme = 'dark') {
       price: '#00ff41',
       border: '#003b00',
       pos: '#00ff41',
-      neg: '#ff0000',
-      trendOpacity: '0.5'
+      neg: '#ff0000'
     },
     sunset: {
       bg: '#2d1b33',
@@ -82,8 +79,7 @@ function buildBanner(stocks, theme = 'dark') {
       price: '#ffffff',
       border: '#4a304d',
       pos: '#ff7e5f',
-      neg: '#feb47b',
-      trendOpacity: '0.4'
+      neg: '#feb47b'
     },
     dracula: {
       bg: '#282a36',
@@ -92,8 +88,7 @@ function buildBanner(stocks, theme = 'dark') {
       price: '#f8f8f2',
       border: '#44475a',
       pos: '#50fa7b',
-      neg: '#ff5555',
-      trendOpacity: '0.4'
+      neg: '#ff5555'
     },
     forest: {
       bg: '#1a1d1a',
@@ -102,8 +97,7 @@ function buildBanner(stocks, theme = 'dark') {
       price: '#f2e8cf',
       border: '#386641',
       pos: '#a7c957',
-      neg: '#bc4749',
-      trendOpacity: '0.4'
+      neg: '#bc4749'
     }
   };
 
@@ -134,27 +128,6 @@ function buildBanner(stocks, theme = 'dark') {
     const truncName = (stock.name || '').length > 18 ? stock.name.slice(0, 18) + '...' : stock.name;
     const escapedName = escapeXml(truncName.toUpperCase());
 
-    // Generate Sparkline Path
-    let sparklinePath = '';
-    if (stock.trend && stock.trend.length > 1) {
-      const points = stock.trend.map(p => parseFloat(p));
-      const min = Math.min(...points);
-      const max = Math.max(...points);
-      const range = max - min || 1;
-      
-      const chartW = 80;
-      const chartH = 25;
-      const chartX = 145;
-      const chartY = 12;
-
-      const coords = points.map((p, idx) => {
-        const x = chartX + (idx / (points.length - 1)) * chartW;
-        const y = chartY + chartH - ((p - min) / range) * chartH;
-        return `${x},${y}`;
-      });
-      sparklinePath = coords.join(' L ');
-    }
-
     // Each card gets its own clipPath to contain the slide animation
     content += `
       <defs>
@@ -170,16 +143,6 @@ function buildBanner(stocks, theme = 'dark') {
             <text x="20" y="26" class="text symbol">${displayName}</text>
             <text x="20" y="38" class="text name">${escapedName}</text>
             <text x="20" y="62" class="text price">$${priceStr}</text>
-
-            ${sparklinePath ? `
-            <path d="M ${sparklinePath}" 
-                  fill="none" 
-                  stroke="${color}" 
-                  stroke-width="1.5" 
-                  stroke-linecap="round" 
-                  stroke-linejoin="round"
-                  opacity="${currentTheme.trendOpacity}"
-                  class="trend-line" />` : ''}
 
             <g transform="translate(145, 42)">
               <g class="change-indicator">
@@ -226,15 +189,6 @@ function buildBanner(stocks, theme = 'dark') {
           transform-origin: center;
         }
 
-        .trend-line {
-          animation: fadeIn 2s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: ${currentTheme.trendOpacity}; }
-        }
-
         ${staggerStyles}
       </style>
     </defs>
@@ -252,24 +206,19 @@ async function updateStockData() {
     return;
   }
   try {
+    const url = `https://api.twelvedata.com/quote?symbol=${STOCKS_TO_TRACK}&apikey=${API_KEY}`;
+    const r = await fetch(url);
+    const data = await r.json();
+
+    if (!r.ok || data.code) {
+        console.error('API Error during background refresh:', data);
+        return;
+    }
+
+    // Convert API response to array
     const symbols = STOCKS_TO_TRACK.split(',');
-    const results = await Promise.all(symbols.map(async (s) => {
-      const quoteUrl = `https://api.twelvedata.com/quote?symbol=${s}&apikey=${API_KEY}`;
-      const seriesUrl = `https://api.twelvedata.com/time_series?symbol=${s}&interval=1day&outputsize=7&order=ASC&apikey=${API_KEY}`;
-      
-      const [quoteR, seriesR] = await Promise.all([fetch(quoteUrl), fetch(seriesUrl)]);
-      const quoteData = await quoteR.json();
-      const seriesData = await seriesR.json();
-
-      if (quoteData.code || seriesData.code) return null;
-
-      return {
-        ...quoteData,
-        trend: seriesData.values ? seriesData.values.map(v => v.close) : []
-      };
-    }));
-
-    globalStockCache = results.filter(Boolean);
+    globalStockCache = symbols.map(s => (symbols.length === 1 ? data : data[s])).filter(Boolean);
+    
     console.log(`Cache updated at ${new Date().toLocaleTimeString()}`);
   } catch (err) {
     console.error('Failed to refresh stocks:', err);
@@ -290,32 +239,24 @@ app.get('/banner/:symbols', async (req, res) => {
   const cachedData = cache.get(symbols);
 
   try {
-    const symbolsList = symbols.split(',');
-    const stockArray = await Promise.all(symbolsList.map(async (s) => {
-      const quoteUrl = `https://api.twelvedata.com/quote?symbol=${s}&apikey=${API_KEY}`;
-      const seriesUrl = `https://api.twelvedata.com/time_series?symbol=${s}&interval=1day&outputsize=7&order=ASC&apikey=${API_KEY}`;
-      
-      const [quoteR, seriesR] = await Promise.all([fetch(quoteUrl), fetch(seriesUrl)]);
-      const quoteData = await quoteR.json();
-      const seriesData = await seriesR.json();
+    const url = `https://api.twelvedata.com/quote?symbol=${symbols}&apikey=${API_KEY}`;
+    const r = await fetch(url);
+    const data = await r.json();
 
-      if (quoteData.code || seriesData.code) return null;
+    if (!r.ok || data.code) throw new Error('API Error');
 
-      return {
-        ...quoteData,
-        trend: seriesData.values ? seriesData.values.map(v => v.close) : []
-      };
-    }));
+    let symbolsArray = symbols.split(',');
+    let stockArray = symbolsArray.map(s => 
+      symbolsArray.length === 1 ? data : data[s]
+    ).filter(Boolean);
 
-    const finalArray = stockArray.filter(Boolean);
-
-    // Save the result to cache before sending
+    // 2. Save the result to cache before sending
     cache.set(symbols, {
-      data: finalArray,
+      data: stockArray,
       timestamp: Date.now()
     });
 
-    const svg = buildBanner(finalArray, theme);
+    const svg = buildBanner(stockArray, theme);
     res.setHeader('Content-Type', 'image/svg+xml');
     res.setHeader('Cache-Control', 'public, max-age=300');
     res.send(svg);
