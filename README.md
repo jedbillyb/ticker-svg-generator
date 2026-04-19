@@ -1,129 +1,140 @@
+<div align="center">
+
 # ticker-svg-generator
 
-An enterprise-grade, animated SVG generator for live stock and cryptocurrency market data. Designed specifically for embedding in GitHub profiles, GitLab READMEs, or any markdown environment that supports SVGs.
+**Animated SVG stock and crypto banners for GitHub profiles and READMEs.**
 
-![Dark Banner Hero](./animated_banner.svg)
+[![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](./LICENSE)
+[![Node](https://img.shields.io/badge/Node.js-20+-339933?style=flat-square&logo=node.js)](https://nodejs.org)
+[![Express](https://img.shields.io/badge/Express.js-4-000000?style=flat-square&logo=express)](https://expressjs.com)
+[![Data](https://img.shields.io/badge/Twelve_Data-API-FF6B35?style=flat-square)](https://twelvedata.com)
 
-## Overview
+![Dark Banner](./animated_banner.svg)
 
-`ticker-svg` transforms real-time market data into high-fidelity, CSS-animated SVG banners. Unlike static image generators, this service leverages native SVG animations and CSS transitions to provide a "dashboard" feel with minimal footprint and zero client-side JavaScript requirements for the end user.
+</div>
 
-### Technical Features
+---
 
-- **Staggered CSS Entrance**: Utilizes `cubic-bezier` timing functions to create a sophisticated, staggered entry effect for each ticker card.
-- **Dynamic Clipping**: Employs SVG `<clipPath>` definitions to contain animations within precise card boundaries, ensuring a clean visual flow.
-- **Micro-Animations**: Features a "breathing" opacity animation on the price change indicators to draw attention to market movements.
-- **Dual-Layer Caching Strategy**:
-  - **Global Cache**: A background worker refreshes default symbols (`RKLB`, `NVDA`, `NBIS`, `BTC/USD`) every 5 minutes.
-  - **Dynamic Cache**: Custom symbol requests are cached locally with a TTL to optimize API credit usage while ensuring low-latency delivery.
-- **Resilient Architecture**: Built-in fallback mechanism that serves stale cache data if the upstream API (Twelve Data) is unreachable.
-- **Dark Mode Native**: Styled with a `#151515` background and high-contrast typography optimized for modern developer platforms.
-- **XML Safe Rendering**: Automatically escapes special characters (like `&` in "AT&T") to ensure SVG validity across all platforms.
-- **Theme Support**: Includes a built-in light theme for use on white backgrounds or light-themed documentation.
+`ticker-svg` transforms live market data into CSS-animated SVG banners. Unlike static image generators, the output uses native SVG animations and CSS transitions — no client-side JavaScript required for the viewer.
 
-## Architecture
+## Features
 
-The service is built on a lightweight **Express.js** stack with **Node-Fetch** for data ingestion.
+- **Staggered entrance** — `cubic-bezier` timing functions animate each ticker card in sequence
+- **Dynamic clipping** — SVG `<clipPath>` definitions keep animations within card boundaries
+- **Breathing indicators** — Opacity micro-animation on price change indicators draws attention to movement
+- **Dual-layer cache** — Global cache refreshes default symbols every 5 minutes; custom requests are TTL-cached separately to conserve API credits
+- **Resilient fallback** — Serves stale cache data if the Twelve Data API is unreachable
+- **6 themes** — Dark, light, matrix, sunset, dracula, and forest
+- **XML-safe rendering** — Special characters (e.g. `&` in "AT&T") are automatically escaped for valid SVG output
 
-1. **Request**: User requests `/banner` or `/banner/SYMBOL1,SYMBOL2`.
-2. **Cache Check**: System checks for valid local data.
-3. **Data Ingestion**: If cache is missing/stale, it fetches from the **Twelve Data API**.
-4. **SVG Engine**: The `buildBanner` function dynamically constructs an SVG string with per-card CSS keyframes and staggered delays.
-5. **Response**: Delivers a `Content-Type: image/svg+xml` buffer with standard HTTP cache headers.
+---
+
+## How It Works
+
+1. **Request** — Client hits `/banner` or `/banner/SYMBOL1,SYMBOL2`
+2. **Cache check** — Server checks for valid local data first
+3. **Data fetch** — On cache miss or expiry, fetches from the Twelve Data API
+4. **SVG engine** — `buildBanner` constructs an SVG string with per-card CSS keyframes and staggered delays
+5. **Response** — Delivers `Content-Type: image/svg+xml` with standard HTTP cache headers
+
+---
 
 ## Themes
 
-The banner supports a `theme` query parameter to switch between various color palettes.
+Pass a `?theme=` query parameter to switch palettes.
 
-| **Dark** (Default) | **Light** |
-| :--- | :--- |
-| ![Dark Banner](./animated_banner.svg) | ![Light Banner](./light_banner_example.svg) |
+| Dark (default) | Light |
+|:---|:---|
+| ![Dark](./animated_banner.svg) | ![Light](./light_banner_example.svg) |
 
-| **Matrix** | **Sunset** |
-| :--- | :--- |
-| ![Matrix Banner](./matrix_example.svg) | ![Sunset Banner](./sunset_example.svg) |
+| Matrix | Sunset |
+|:---|:---|
+| ![Matrix](./matrix_example.svg) | ![Sunset](./sunset_example.svg) |
 
-| **Dracula** | **Forest** |
-| :--- | :--- |
-| ![Dracula Banner](./dracula_example.svg) | ![Forest Banner](./forest_example.svg) |
+| Dracula | Forest |
+|:---|:---|
+| ![Dracula](./dracula_example.svg) | ![Forest](./forest_example.svg) |
 
-### Available Themes
-- `dark` (default)
-- `light`
-- `matrix`
-- `sunset`
-- `dracula`
-- `forest`
+Available values: `dark` · `light` · `matrix` · `sunset` · `dracula` · `forest`
 
-## Examples
+---
 
-### Default Banner (Dark)
-`GET /banner`
+## API
 
-### Custom Banner (Light Theme)
-`GET /banner/AAPL,MSFT,TSLA?theme=light`
+**Default banner (dark)**
+```
+GET /banner
+```
 
-### Crypto Tracker (Dark Theme)
-`GET /banner/BTC/USD,ETH/USD,SOL/USD`
+**Custom symbols with theme**
+```
+GET /banner/AAPL,MSFT,TSLA?theme=light
+```
+
+**Crypto tracker**
+```
+GET /banner/BTC/USD,ETH/USD,SOL/USD
+```
+
+---
 
 ## Usage
 
-### Development (Mock Mode)
-To run the server with mock data and automatic reload on file changes:
+### Development (mock data)
+
 ```bash
-npm run dev
+DEV_MODE=true npm run dev
 ```
-Or for a single run:
+
+Runs with mock market data and auto-reloads on file changes — no API key needed.
+
+### Production
+
 ```bash
-node server.js
+npm start
 ```
 
-### Production (Real API)
-To run the server with live market data from the Twelve Data API:
-```bash
-NODE_ENV=production node server.js
-```
-
-## Configuration
-
-Create a `.env` file in the project root:
-
-```env
-PORT=3001
-TWELVE_DATA_API_KEY=your_twelve_data_key
-```
+Requires a valid `TWELVE_DATA_API_KEY` in `.env`.
 
 ### Environment Variables
-- `PORT`: The port the server will listen on (default: 3001).
-- `TWELVE_DATA_API_KEY`: Your API key from Twelve Data.
-- `NODE_ENV`: Set to `production` to enable live API fetching.
 
-## Endpoints
+```env
+TWELVE_DATA_API_KEY=your_key_here
+PORT=3000
+DEV_MODE=false
+STAGGER_DELAY_S=0.15
+```
 
-### Default Ticker
-`GET /banner`
-Serves the pre-configured set of default stocks and crypto.
-
-### Custom Ticker
-`GET /banner/:symbols`
-Example: `/banner/AAPL,MSFT,GOOGL,ETH/USD`
-Request any symbol supported by Twelve Data. Note that cryptos use the `SYMBOL/USD` format.
+---
 
 ## Deployment
 
-### Systemd Integration
-A `ticker-svg.service` file is included for robust Linux deployment.
+### systemd Service
 
 ```bash
 sudo cp ticker-svg.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable ticker-svg
 sudo systemctl start ticker-svg
+
+sudo journalctl -u ticker-svg -f
 ```
+
+### Embedding in a README
+
+```markdown
+![Stock Ticker](https://your-server.com/banner)
+![Custom](https://your-server.com/banner/AAPL,NVDA?theme=dracula)
+```
+
+---
 
 ## License
 
-[MIT](LICENSE)
+MIT — see [LICENSE](LICENSE) for details.
 
 ---
-Made with ❤️ by [jedbillyb](https://github.com/jedbillyb)
+
+<div align="center">
+<sub>MIT © <a href="https://github.com/jedbillyb">jedbillyb</a> · Made with ❤️</sub>
+</div>
