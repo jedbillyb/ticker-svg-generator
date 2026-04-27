@@ -10,7 +10,7 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 const STOCKS_TO_TRACK = 'RKLB,NVDA,NBIS,BTC/USD';
 let globalStockCache = null;
 
-const STAGGER_DELAY_MS = 0.3; // seconds between each card entranc
+const STAGGER_DELAY_S = 0.4; // seconds between each card entrance
 const STAGGER_DURATION_S = 0.9; // how long each card's animation takes
 
 const DEV_MODE = process.env.NODE_ENV !== 'production';
@@ -109,6 +109,7 @@ function buildBanner(stocks, theme = 'dark') {
   const totalWidth = stocks.length * cardWidth;
 
   let content = '';
+  let clipPaths = '';
 
   stocks.forEach((stock, i) => {
     const xOffset = i * cardWidth;
@@ -128,13 +129,13 @@ function buildBanner(stocks, theme = 'dark') {
     const truncName = (stock.name || '').length > 18 ? stock.name.slice(0, 18) + '...' : stock.name;
     const escapedName = escapeXml(truncName.toUpperCase());
 
-    // Each card gets its own clipPath to contain the slide animation
-    content += `
-      <defs>
+    clipPaths += `
         <clipPath id="clip-${i}">
           <rect x="${xOffset}" y="0" width="${cardWidth}" height="${height}" />
-        </clipPath>
-      </defs>
+        </clipPath>`;
+
+    // Each card gets its own clipPath to contain the slide animation
+    content += `
       <g clip-path="url(#clip-${i})">
         <g transform="translate(${xOffset}, 0)">
           <g class="stock-group stock-group-${i}">
@@ -159,12 +160,14 @@ function buildBanner(stocks, theme = 'dark') {
   const staggerStyles = stocks.map((_, i) => `
     .stock-group-${i} {
       animation: slideUp ${STAGGER_DURATION_S}s cubic-bezier(0.22, 1, 0.36, 1) both;
-      animation-delay: ${i * STAGGER_DELAY_MS}s;
+      animation-delay: ${i * STAGGER_DELAY_S}s;
+      will-change: transform, opacity;
     }
   `).join('');
 
   return `<svg width="${totalWidth}" height="${height}" viewBox="0 0 ${totalWidth} ${height}" xmlns="http://www.w3.org/2000/svg">
     <defs>
+      ${clipPaths}
       <style>
         .text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
         .symbol { fill: ${currentTheme.symbol}; font-size: 13px; font-weight: 600; }
@@ -187,6 +190,7 @@ function buildBanner(stocks, theme = 'dark') {
           animation: breathe 3s ease-in-out infinite;
           transform-box: fill-box;
           transform-origin: center;
+          will-change: opacity;
         }
 
         ${staggerStyles}
@@ -217,9 +221,14 @@ async function updateStockData() {
 
     // Convert API response to array
     const symbols = STOCKS_TO_TRACK.split(',');
-    globalStockCache = symbols.map(s => (symbols.length === 1 ? data : data[s])).filter(Boolean);
+    const stockResults = symbols.map(s => (symbols.length === 1 ? data : data[s])).filter(Boolean);
     
-    console.log(`Cache updated at ${new Date().toLocaleTimeString()}`);
+    if (stockResults.length > 0) {
+      globalStockCache = stockResults;
+      console.log(`Cache updated at ${new Date().toLocaleTimeString()}`);
+    } else {
+      console.warn('API returned no valid stock data');
+    }
   } catch (err) {
     console.error('Failed to refresh stocks:', err);
   }
@@ -250,6 +259,8 @@ app.get('/banner/:symbols', async (req, res) => {
       symbolsArray.length === 1 ? data : data[s]
     ).filter(Boolean);
 
+    if (stockArray.length === 0) throw new Error('No valid stock data found');
+
     // 2. Save the result to cache before sending
     cache.set(symbols, {
       data: stockArray,
@@ -258,7 +269,7 @@ app.get('/banner/:symbols', async (req, res) => {
 
     const svg = buildBanner(stockArray, theme);
     res.setHeader('Content-Type', 'image/svg+xml');
-    res.setHeader('Cache-Control', 'public, max-age=300');
+    res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
     res.send(svg);
 
   } catch (err) {
@@ -280,15 +291,17 @@ updateStockData();
 setInterval(updateStockData, 5 * 60 * 1000);
 
 app.get('/banner', (req, res) => {
+  const theme = req.query.theme || 'dark';
+  const stocks = globalStockCache || MOCK_STOCKS;
+
   if (!globalStockCache) {
-    return res.status(503).send('Server warming up... refresh in 5 seconds.');
+    console.warn('Serving mock data for /banner because API is exhausted or warming up.');
   }
 
-  const theme = req.query.theme || 'dark';
-  const svg = buildBanner(globalStockCache, theme);
+  const svg = buildBanner(stocks, theme);
 
   res.setHeader('Content-Type', 'image/svg+xml');
-  res.setHeader('Cache-Control', 'public, max-age=300');
+  res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
   res.send(svg);
 });
 const MY_PROJECTS = [
@@ -316,7 +329,7 @@ app.get('/projects', (req, res) => {
   const height = headerHeight + (MY_PROJECTS.length * rowHeight) + 15;
 
   const rows = MY_PROJECTS.map((p, i) => `
-    <tr class="project-row" style="animation-delay: ${0.1 + (i * 0.1)}s;">
+    <tr class="project-row" style="animation-delay: ${0.2 + (i * 0.15)}s;">
       <td style="padding: 8px 12px; color: ${nameColor}; font-weight: 600; font-size: 12px;">${escapeXml(p.name)}</td>
       <td style="padding: 8px 12px; color: ${stackColor}; font-size: 11px;">${escapeXml(p.stack)}</td>
       <td style="padding: 8px 12px; color: ${descColor}; font-size: 11px;">${escapeXml(p.desc)}</td>
@@ -351,6 +364,7 @@ app.get('/projects', (req, res) => {
         .project-row {
           border-bottom: 1px solid ${rowBorder};
           animation: slideUp 0.5s ease-out both;
+          will-change: transform, opacity;
         }
         .project-row:last-child { border-bottom: none; }
       </style>
@@ -371,6 +385,6 @@ app.get('/projects', (req, res) => {
 </svg>`;
 
   res.setHeader('Content-Type', 'image/svg+xml');
-  res.setHeader('Cache-Control', 'public, max-age=300');
+  res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
   res.send(svg);
 });
