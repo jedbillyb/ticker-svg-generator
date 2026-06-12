@@ -132,7 +132,7 @@ sudo journalctl -u ticker-svg -f
 
 ## License
 
-MIT — see [LICENSE](LICENSE) for details.
+MIT - see [LICENSE](LICENSE) for details.
 
 ---
 
